@@ -1,22 +1,102 @@
 import AsyncStorage from '@react-native-community/async-storage';
-import React from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
-import { Link } from 'react-router-native';
+import React, { useEffect, useState } from 'react';
+import { Button, StyleSheet, Text, View, Image, Animated } from 'react-native';
+import CardWithText from './../components/CardWithText';
 import firebase from './../config/firebase';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Card = () => {
+  const db = firebase.firestore();
+  const [selectedCard, setSelectedCard] = useState({});
 
-  const onPress = async () => {
-    await AsyncStorage.setItem('isFirstTime', 'true');
+  useEffect(() => {
+    connected();
+  },[])
+
+  //User usedCards
+  const getUsedCards = async (userId) => {
+    return await db.collection("users").doc(userId).get().then(snapshot => {
+      return snapshot.data().usedCards;
+    })
+  }
+
+  const getAllCards = async () => {
+    return await db.collection("cards").get().then(querySnapshot => {
+      const cards = [];
+      querySnapshot.forEach(doc => {
+        cards.push({
+          id: doc.id,
+          card: doc.data()
+        })
+      })
+      return cards;
+    })
+  }
+
+  const getRandomInt = (max) => {
+    return Math.floor(Math.random() * Math.floor(max));
+  }
+
+  const connected = async () => {
+    // await AsyncStorage.setItem('isFirstTime', 'true');
+    const userId = await AsyncStorage.getItem('userId');
+    const usedCards = await getUsedCards(userId);
+    const allCards = await getAllCards();
+
+    const filteredCards = allCards.filter(card => !usedCards.includes(card.id))
+
+    const chosenCard = filteredCards[getRandomInt(filteredCards.length)];
+    console.log('chosenCard', chosenCard);
+    setSelectedCard(chosenCard);
+
+    // const finishedCards = [...usedCards, selectedCard.id];
+    // await db.collection("users").doc(userId).set({
+    //   usedCards: finishedCards
+    // }, {merge: true})
+
   }
 
   return (
-    <View>
-      <Text>AMAZING START</Text>
-      <Link to='/home'><Text>AMAZING CARD</Text></Link>
-      <Button onPress={onPress} title='hej' />
+    <View style={styles.container}>
+      <LinearGradient
+        // Background Linear Gradient
+        colors={['rgba(255,92,0,0.60)', 'rgba(202,31,93,0.60)']}
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: 0,
+          height: '100%',
+        }}
+      />
+      <Text style={styles.text} >MorgonAppen</Text>
+      {("card" in selectedCard) && 
+        <Animated.View style={styles.card} ><CardWithText uri={selectedCard.card.imageUrl} text={selectedCard.card.text} /></Animated.View>}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    position: 'relative',
+    flex: 1,
+    display: 'flex',
+    backgroundColor: '#fff'
+  },
+  text: {
+    textAlign: 'center',
+    paddingTop: 80,
+    fontSize: 40,
+    color: '#fff'
+  },
+  card: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    right: 0,
+    height: '100%'
+  }
+})
 
 export default Card;

@@ -18,9 +18,7 @@ const FirstTime = () => {
   const onChange = async (event, selectedTime) => {
     const currentDate = selectedTime || time;
     // setShow(Platform.OS === 'ios');
-    console.log(currentDate);
     const item = await AsyncStorage.getItem('isFirstTime');
-    console.log(item);
     setTime(currentDate);
   };
 
@@ -53,7 +51,8 @@ const FirstTime = () => {
   const onClick = async () => {
     const data = {
       time,
-      expoShareToken
+      expoShareToken,
+      usedCards: []
     }
     try {
       const response = await db.collection("users").add(data);
@@ -62,7 +61,6 @@ const FirstTime = () => {
         await AsyncStorage.setItem('userId', id);
         await AsyncStorage.setItem('isFirstTime', 'false');
         const item = await AsyncStorage.getItem('isFirstTime');
-        console.log(item);
        setRedirectTo('card');
       } catch (error) {
         console.log(error);

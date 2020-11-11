@@ -9,12 +9,10 @@ export default function App() {
   const [redirectTo, setRedirectTo] = useState('');
 
   useEffect(() => {
-    
     isFirstTime();
   }, [])
   
   const isFirstTime = async () => {
-    console.log('What does it return?: ', await AsyncStorage.getItem('isFirstTime'));
     setRedirectTo(await AsyncStorage.getItem('isFirstTime') === 'false' ? 'card' : 'isFirstTime');
   }
 
@@ -38,8 +36,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 40,
-    backgroundColor: "#D5B8F8",
+    backgroundColor: "#120507",
   },
 });
 
