@@ -7,42 +7,39 @@ import {
   Alert,
   TouchableOpacity,
   Image,
+  Platform,
 } from "react-native";
 import * as Permissions from "expo-permissions";
 import * as Notifications from "expo-notifications";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-community/async-storage";
-import firebase from "../config/firebase";
+import firebase from "../../config/firebase";
 import moment from "moment";
 import { Redirect } from "react-router-native";
 import { LinearGradient } from "expo-linear-gradient";
-import logo from "./../assets/logo.png";
+import logo from "../../assets/logo.png";
 
 const FirstTime = () => {
   const db = firebase.firestore();
   const [redirectTo, setRedirectTo] = useState(false);
   const [expoShareToken, setExpoShareToken] = useState("");
+
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const [mySelectedTime, setMySelectedTime] = useState("My time");
-  //DatePicker
+  const [mySelectedTime, setMySelectedTime] = useState();
   const [time, setTime] = useState(new Date(Date.now()));
 
-  const onChange = async (event, selectedTime) => {
-    const isAndroid = event.type ? true : false;
+  const isAndroid = Platform.OS === "android";
 
+  const onChange = async (event, selectedTime) => {
     if (isAndroid) {
       setShowTimePicker(false);
     }
+    if (selectedTime) {
+      const hours = selectedTime.getHours();
+      const minutes = selectedTime.getMinutes();
+      setMySelectedTime(`${hours}:${minutes}`);
+    }
     const currentDate = selectedTime || time;
-
-    // const hours = selectedTime.getHours();
-    // const minutes = selectedTime.getMinutes();
-    // console.log(hours, ":", minutes);
-
-    // const todaysDate = new Date();
-    // const selectedTimes = `${todaysDate.getHours()}:${todaysDate.getMinutes()}`;
-    // console.log(selectedTimes, "selectedtime");
-    // setShow(Platform.OS === 'ios');
     const item = await AsyncStorage.getItem("isFirstTime");
     setTime(currentDate);
   };
@@ -57,17 +54,17 @@ const FirstTime = () => {
     );
     let finalStatus = existingStatus;
 
-    // if (existingStatus !== "granted") {
-    //   const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
-    //   finalStatus = status;
-    // }
+    if (existingStatus !== "granted") {
+      const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+      finalStatus = status;
+    }
 
-    // if (finalStatus !== "granted") {
-    //   console.error("Permissions was not granted, status: ", finalStatus);
-    //   Alert.alert("You need to give permission in order to use the app.");
-    //   const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
-    //   return;
-    // }
+    if (finalStatus !== "granted") {
+      console.error("Permissions was not granted, status: ", finalStatus);
+      Alert.alert("You need to give permission in order to use the app.");
+      const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+      return;
+    }
 
     let token = await Notifications.getExpoPushTokenAsync();
     setExpoShareToken(token);
@@ -79,7 +76,6 @@ const FirstTime = () => {
 
   const onClick = async () => {
     const unixedDate = moment(time).add(1, "hour").unix();
-
     const data = {
       time: unixedDate,
       expoShareToken,
@@ -104,44 +100,64 @@ const FirstTime = () => {
   return (
     <>
       <View style={styles.container}>
-        {/* {redirectTo === 'card' && <Redirect to="/card"/>} */}
+        {redirectTo === "card" && <Redirect to="/card" />}
         <View>
           <Image source={logo} style={styles.logo} />
-          <Text style={styles.header}>Welcome!</Text>
+          <Text style={styles.header}>Välkommen!</Text>
           <Text style={styles.text}>
-            Please tell us when you want us to enlighten your day
+            Vänligen välj den tid du önskar blabla
           </Text>
 
-          <TouchableOpacity
-            onPress={openTimePicker}
-            style={styles.setTimeContainer}
-          >
-            <Text style={styles.setTimeText}>Choose time</Text>
+          {isAndroid && (
+            <TouchableOpacity
+              onPress={openTimePicker}
+              style={styles.setTimeContainer}
+            >
+              <Text style={styles.setTimeText}>
+                {" "}
+                {!mySelectedTime ? "Välj tid" : "Ändra tid"}
+              </Text>
+            </TouchableOpacity>
+          )}
+          {!isAndroid && (
+            <DateTimePicker
+              style={styles.timePicker}
+              testID="timePicker"
+              value={time}
+              mode={"time"}
+              is24Hour={true}
+              display="spinner"
+              onChange={onChange}
+            />
+          )}
 
-            <Text></Text>
+          {showTimePicker && isAndroid && (
+            <DateTimePicker
+              style={styles.timePicker}
+              testID="timePicker"
+              value={time}
+              mode={"time"}
+              is24Hour={true}
+              display="spinner"
+              onChange={onChange}
+            />
+          )}
 
-            {showTimePicker && (
-              <DateTimePicker
-                style={styles.timePicker}
-                testID="timePicker"
-                value={time}
-                mode={"time"}
-                is24Hour={true}
-                display="spinner"
-                onChange={onChange}
-              />
-            )}
-          </TouchableOpacity>
+          {isAndroid && mySelectedTime && (
+            <Text style={styles.mySelectedTime}>{mySelectedTime}</Text>
+          )}
         </View>
 
-        <LinearGradient
-          colors={["#FF5C00", "#E4862F"]}
-          style={styles.buttonContainer}
-        >
-          <TouchableOpacity onPress={onClick}>
-            <Text style={styles.buttonText}>{mySelectedTime}!</Text>
-          </TouchableOpacity>
-        </LinearGradient>
+        {mySelectedTime && (
+          <LinearGradient
+            colors={["#FF5C00", "#E4862F"]}
+            style={styles.buttonContainer}
+          >
+            <TouchableOpacity onPress={onClick}>
+              <Text style={styles.buttonText}>Spara</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        )}
       </View>
     </>
   );
@@ -167,7 +183,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   text: {
-    fontSize: 24,
+    fontSize: 22,
     paddingBottom: 20,
     textAlign: "center",
   },
@@ -183,6 +199,11 @@ const styles = StyleSheet.create({
   },
   timePicker: {
     position: "relative",
+  },
+  mySelectedTime: {
+    fontSize: 32,
+    textAlign: "center",
+    color: "#000",
   },
   buttonContainer: {
     borderRadius: 10,

@@ -3,7 +3,8 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { NativeRouter, Redirect, Route } from "react-router-native";
-import { Home, Settings, FirstTime, Card } from "./routes";
+import { Home, Settings, Card } from "./routes";
+import { FirstTime } from "./routes/FirstTime";
 
 export default function App() {
   const [redirectTo, setRedirectTo] = useState("");
@@ -13,7 +14,11 @@ export default function App() {
   }, []);
 
   const isFirstTime = async () => {
-    // setRedirectTo(await AsyncStorage.getItem('isFirstTime') === 'false' ? 'card' : 'isFirstTime');
+    setRedirectTo(
+      (await AsyncStorage.getItem("isFirstTime")) === "false"
+        ? "card"
+        : "isFirstTime"
+    );
     setRedirectTo("isFirstTime");
   };
 
