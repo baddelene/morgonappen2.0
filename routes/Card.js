@@ -4,6 +4,7 @@ import { Button, StyleSheet, Text, View, Image, Animated } from 'react-native';
 import CardWithText from './../components/CardWithText';
 import firebase from './../config/firebase';
 import { LinearGradient } from 'expo-linear-gradient';
+import logo from './../assets/logo.png';
 
 const Card = () => {
   const db = firebase.firestore();
@@ -58,18 +59,7 @@ const Card = () => {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        // Background Linear Gradient
-        colors={['rgba(255,92,0,0.60)', 'rgba(202,31,93,0.60)']}
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: 0,
-          height: '100%',
-        }}
-      />
-      <Text style={styles.text} >MorgonAppen</Text>
+      <Image source={logo} style={styles.logo}/>
       {("card" in selectedCard) && 
         <Animated.View style={styles.card} ><CardWithText uri={selectedCard.card.imageUrl} text={selectedCard.card.text} /></Animated.View>}
     </View>
@@ -88,6 +78,10 @@ const styles = StyleSheet.create({
     paddingTop: 80,
     fontSize: 40,
     color: '#fff'
+  },
+  logo: {
+    alignSelf: "center",
+    marginTop: 70
   },
   card: {
     position: 'absolute',

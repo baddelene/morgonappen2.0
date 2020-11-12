@@ -86,11 +86,11 @@ const CardWithText = ({uri, text}) => {
         {
           translateY: shrinkCard.interpolate({
             inputRange: [0, 1],
-            outputRange: [0, 120]
+            outputRange: [0, 100]
           }),
           scaleY: shrinkCard.interpolate({
             inputRange: [0, 1],
-            outputRange: [1, 0.5]
+            outputRange: [1, 0.7]
           }),
           scaleX: shrinkCard.interpolate({
             inputRange: [0, 1],
