@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  Button,
   StyleSheet,
   Text,
   View,
@@ -9,15 +8,17 @@ import {
   Image,
   Platform,
 } from "react-native";
+import { Redirect } from "react-router-native";
+import AsyncStorage from "@react-native-community/async-storage";
+
 import * as Permissions from "expo-permissions";
 import * as Notifications from "expo-notifications";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import AsyncStorage from "@react-native-community/async-storage";
-import firebase from "../../config/firebase";
-import moment from "moment";
-import { Redirect } from "react-router-native";
 import { LinearGradient } from "expo-linear-gradient";
+import moment from "moment";
+
+import firebase from "../../config/firebase";
 import logo from "../../assets/logo.png";
+import { TimePicker } from "./TimePicker.js";
 
 const FirstTime = () => {
   const db = firebase.firestore();
@@ -37,7 +38,13 @@ const FirstTime = () => {
     if (selectedTime) {
       const hours = selectedTime.getHours();
       const minutes = selectedTime.getMinutes();
-      setMySelectedTime(`${hours}:${minutes}`);
+      const getHours = () => {
+        return hours < 10 ? `0${hours}` : hours;
+      };
+      const getMinutes = () => {
+        return minutes < 10 ? `0${minutes}` : minutes;
+      };
+      setMySelectedTime(`${getHours()}:${getMinutes()}`);
     }
     const currentDate = selectedTime || time;
     const item = await AsyncStorage.getItem("isFirstTime");
@@ -105,47 +112,16 @@ const FirstTime = () => {
           <Image source={logo} style={styles.logo} />
           <Text style={styles.header}>Välkommen!</Text>
           <Text style={styles.text}>
-            Vänligen välj den tid du önskar blabla
+            Vänligen välj den tid du önskar få din dagliga notis
           </Text>
-
-          {isAndroid && (
-            <TouchableOpacity
-              onPress={openTimePicker}
-              style={styles.setTimeContainer}
-            >
-              <Text style={styles.setTimeText}>
-                {" "}
-                {!mySelectedTime ? "Välj tid" : "Ändra tid"}
-              </Text>
-            </TouchableOpacity>
-          )}
-          {!isAndroid && (
-            <DateTimePicker
-              style={styles.timePicker}
-              testID="timePicker"
-              value={time}
-              mode={"time"}
-              is24Hour={true}
-              display="spinner"
-              onChange={onChange}
-            />
-          )}
-
-          {showTimePicker && isAndroid && (
-            <DateTimePicker
-              style={styles.timePicker}
-              testID="timePicker"
-              value={time}
-              mode={"time"}
-              is24Hour={true}
-              display="spinner"
-              onChange={onChange}
-            />
-          )}
-
-          {isAndroid && mySelectedTime && (
-            <Text style={styles.mySelectedTime}>{mySelectedTime}</Text>
-          )}
+          <TimePicker
+            isAndroid={isAndroid}
+            openTimePicker={openTimePicker}
+            mySelectedTime={mySelectedTime}
+            time={time}
+            onChange={onChange}
+            showTimePicker={showTimePicker}
+          />
         </View>
 
         {mySelectedTime && (
@@ -186,24 +162,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     paddingBottom: 20,
     textAlign: "center",
-  },
-  setTimeContainer: {
-    paddingHorizontal: 10,
-    paddingVertical: 40,
-  },
-  setTimeText: {
-    textAlign: "center",
-    fontSize: 20,
-    color: "#FF5C00",
-    fontWeight: "600",
-  },
-  timePicker: {
-    position: "relative",
-  },
-  mySelectedTime: {
-    fontSize: 32,
-    textAlign: "center",
-    color: "#000",
   },
   buttonContainer: {
     borderRadius: 10,
