@@ -55,7 +55,6 @@ const Card = () => {
     );
 
     const chosenCard = filteredCards[getRandomInt(filteredCards.length)];
-    console.log('chosenCard', chosenCard);
     setSelectedCard(chosenCard);
 
     // const finishedCards = [...usedCards, selectedCard.id];

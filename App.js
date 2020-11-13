@@ -20,7 +20,7 @@ export default function App() {
         ? 'card'
         : 'isFirstTime'
     );
-    // setRedirectTo("isFirstTime");
+    // setRedirectTo('isFirstTime');
   };
 
   return (

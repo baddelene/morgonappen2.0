@@ -133,7 +133,7 @@ const CardWithText = ({ uri, text }) => {
       marginTop: 70,
     },
     logoContainer: {
-      opacity: background ? 0 : 1,
+      opacity: background ? 0 : 0.8,
     },
   });
 
