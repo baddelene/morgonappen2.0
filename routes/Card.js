@@ -1,9 +1,10 @@
 import AsyncStorage from '@react-native-community/async-storage';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Animated } from 'react-native';
+import { StyleSheet, View, Animated, Text } from 'react-native';
 
 import CardWithText from './../components/CardWithText';
 import firebase from './../config/firebase';
+import moment from 'moment';
 
 const Card = () => {
   const db = firebase.firestore();
@@ -40,12 +41,7 @@ const Card = () => {
       });
   };
 
-  const getRandomInt = (max) => {
-    return Math.floor(Math.random() * Math.floor(max));
-  };
-
-  const connected = async () => {
-    // await AsyncStorage.setItem('isFirstTime', 'true');
+  const getNewCardAndFilterOutUsedCards = async () => {
     const userId = await AsyncStorage.getItem('userId');
     const usedCards = await getUsedCards(userId);
     const allCards = await getAllCards();
@@ -55,12 +51,51 @@ const Card = () => {
     );
 
     const chosenCard = filteredCards[getRandomInt(filteredCards.length)];
-    setSelectedCard(chosenCard);
+    return chosenCard;
 
-    // const finishedCards = [...usedCards, selectedCard.id];
+    // const finishedCards = [...usedCards, chosenCard.id];
     // await db.collection("users").doc(userId).set({
     //   usedCards: finishedCards
     // }, {merge: true})
+  }
+
+  const getRandomInt = (max) => {
+    return Math.floor(Math.random() * Math.floor(max));
+  };
+
+  const connected = async () => {
+    const userId = await AsyncStorage.getItem('userId');
+    console.log(userId);
+    //Check if Date.now() is same or after time in DB and if so do below, else use image object in asyncStorage.
+    const now = moment().seconds(0).milliseconds(0);
+    const timeForNewImageInStorage = JSON.parse(await AsyncStorage.getItem('timeToReceiveCard'));
+    const time = moment.unix(timeForNewImageInStorage).seconds(0).milliseconds(0).toISOString() 
+    console.log(time);
+    const shouldUpdateImage = moment(now).isSameOrAfter(time);
+    console.log(now);
+    // console.log(moment(now).toISOString(), moment(timeForNewImage).toISOString());
+
+    //Get card from AsyncStorage
+    const localImageObject = JSON.parse(await AsyncStorage.getItem('localImageObject'));
+    if (localImageObject === null) {
+      console.log('Is null');
+      const chosenCard = await getNewCardAndFilterOutUsedCards();
+
+      //Add chosen card to Async.
+      await AsyncStorage.setItem("localImageObject", JSON.stringify(chosenCard));
+      setSelectedCard(chosenCard);
+    } else if(shouldUpdateImage) {
+      console.log('Should update image');
+      const newTime = await db.collection("users").doc(userId).get().then(data => data.data().time);
+      console.log(moment.unix(newTime).toISOString());
+      await AsyncStorage.setItem('timeToReceiveCard', JSON.stringify(newTime));
+      const chosenCard = await getNewCardAndFilterOutUsedCards()
+      setSelectedCard(chosenCard);
+    } else {
+      const chosenCard = await AsyncStorage.getItem(JSON.parse(localImageObject));
+      setSelectedCard(chosenCard)
+    }
+    
   };
 
   return (
