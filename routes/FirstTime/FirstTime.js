@@ -81,7 +81,7 @@ const FirstTime = () => {
   };
 
   const onClick = async () => {
-    const unixedDate = moment(time).add(1, "hour").unix();
+    const unixedDate = moment(time).add(1, "hour").add(1, "day").unix();
     const data = {
       time: unixedDate,
       expoShareToken,

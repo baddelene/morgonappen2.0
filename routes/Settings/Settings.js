@@ -75,7 +75,7 @@ const Settings = () => {
   };
 
   const saveSettings = async () => {
-    const unixedDate = moment(timeFromPicker).unix();
+    const unixedDate = moment(timeFromPicker).add(1, "day").unix();
     const user = db.collection('users').doc(userId);
 
     try {

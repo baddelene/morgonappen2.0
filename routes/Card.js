@@ -65,15 +65,11 @@ const Card = () => {
 
   const connected = async () => {
     const userId = await AsyncStorage.getItem('userId');
-    console.log(userId);
     //Check if Date.now() is same or after time in DB and if so do below, else use image object in asyncStorage.
     const now = moment().seconds(0).milliseconds(0);
     const timeForNewImageInStorage = JSON.parse(await AsyncStorage.getItem('timeToReceiveCard'));
     const time = moment.unix(timeForNewImageInStorage).seconds(0).milliseconds(0).toISOString() 
-    console.log(time);
     const shouldUpdateImage = moment(now).isSameOrAfter(time);
-    console.log(now);
-    // console.log(moment(now).toISOString(), moment(timeForNewImage).toISOString());
 
     //Get card from AsyncStorage
     const localImageObject = JSON.parse(await AsyncStorage.getItem('localImageObject'));
@@ -92,7 +88,8 @@ const Card = () => {
       const chosenCard = await getNewCardAndFilterOutUsedCards()
       setSelectedCard(chosenCard);
     } else {
-      const chosenCard = await AsyncStorage.getItem(JSON.parse(localImageObject));
+      console.log('Same image');
+      const chosenCard = JSON.parse(await AsyncStorage.getItem("localImageObject"));
       setSelectedCard(chosenCard)
     }
     

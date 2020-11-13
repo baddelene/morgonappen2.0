@@ -32,6 +32,7 @@ export default function App() {
           {redirectTo === 'card' && <Card />}
           {redirectTo === 'isFirstTime' && <Redirect to="/firstTime" />}
         </Route>
+        <Route path="/card" component={Card} />
         <Route path="/settings" component={Settings} />
         <Route path="/firstTime" component={FirstTime} />
       </NativeRouter>
