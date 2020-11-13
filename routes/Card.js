@@ -1,10 +1,9 @@
 import AsyncStorage from '@react-native-community/async-storage';
 import React, { useEffect, useState } from 'react';
-import { Button, StyleSheet, Text, View, Image, Animated } from 'react-native';
+import { StyleSheet, View, Animated } from 'react-native';
+
 import CardWithText from './../components/CardWithText';
 import firebase from './../config/firebase';
-import { LinearGradient } from 'expo-linear-gradient';
-import logo from './../assets/logo.png';
 
 const Card = () => {
   const db = firebase.firestore();
@@ -12,31 +11,38 @@ const Card = () => {
 
   useEffect(() => {
     connected();
-  },[])
+  }, []);
 
   //User usedCards
   const getUsedCards = async (userId) => {
-    return await db.collection("users").doc(userId).get().then(snapshot => {
-      return snapshot.data().usedCards;
-    })
-  }
+    return await db
+      .collection('users')
+      .doc(userId)
+      .get()
+      .then((snapshot) => {
+        return snapshot.data().usedCards;
+      });
+  };
 
   const getAllCards = async () => {
-    return await db.collection("cards").get().then(querySnapshot => {
-      const cards = [];
-      querySnapshot.forEach(doc => {
-        cards.push({
-          id: doc.id,
-          card: doc.data()
-        })
-      })
-      return cards;
-    })
-  }
+    return await db
+      .collection('cards')
+      .get()
+      .then((querySnapshot) => {
+        const cards = [];
+        querySnapshot.forEach((doc) => {
+          cards.push({
+            id: doc.id,
+            card: doc.data(),
+          });
+        });
+        return cards;
+      });
+  };
 
   const getRandomInt = (max) => {
     return Math.floor(Math.random() * Math.floor(max));
-  }
+  };
 
   const connected = async () => {
     // await AsyncStorage.setItem('isFirstTime', 'true');
@@ -44,7 +50,9 @@ const Card = () => {
     const usedCards = await getUsedCards(userId);
     const allCards = await getAllCards();
 
-    const filteredCards = allCards.filter(card => !usedCards.includes(card.id))
+    const filteredCards = allCards.filter(
+      (card) => !usedCards.includes(card.id)
+    );
 
     const chosenCard = filteredCards[getRandomInt(filteredCards.length)];
     console.log('chosenCard', chosenCard);
@@ -54,34 +62,34 @@ const Card = () => {
     // await db.collection("users").doc(userId).set({
     //   usedCards: finishedCards
     // }, {merge: true})
-
-  }
+  };
 
   return (
     <View style={styles.container}>
-      <Image source={logo} style={styles.logo}/>
-      {("card" in selectedCard) && 
-        <Animated.View style={styles.card} ><CardWithText uri={selectedCard.card.imageUrl} text={selectedCard.card.text} /></Animated.View>}
+      {'card' in selectedCard && (
+        <Animated.View style={styles.card}>
+          <CardWithText
+            uri={selectedCard.card.imageUrl}
+            text={selectedCard.card.text}
+          />
+        </Animated.View>
+      )}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
     flex: 1,
     display: 'flex',
-    backgroundColor: '#fff'
+    backgroundColor: '#fff',
   },
   text: {
     textAlign: 'center',
     paddingTop: 80,
     fontSize: 40,
-    color: '#fff'
-  },
-  logo: {
-    alignSelf: "center",
-    marginTop: 70
+    color: '#fff',
   },
   card: {
     position: 'absolute',
@@ -89,8 +97,8 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     right: 0,
-    height: '100%'
-  }
-})
+    height: '100%',
+  },
+});
 
 export default Card;

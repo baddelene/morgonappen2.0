@@ -5,7 +5,6 @@ import * as Permissions from 'expo-permissions';
 import * as Notifications from 'expo-notifications';
 
 const Home = () => {
-
   const registerForPushNotifications = async () => {
     const { status: existingStatus } = await Permissions.getAsync(
       Permissions.NOTIFICATIONS
@@ -24,11 +23,11 @@ const Home = () => {
     let token = await Notifications.getExpoPushTokenAsync();
     Notifications.scheduleNotificationAsync({
       content: {
-        title: 'Remember to drink water!,'
+        title: 'Remember to drink water!,',
       },
       trigger: {
         seconds: 5,
-        repeats: false
+        repeats: false,
       },
     });
     console.log(token);
@@ -36,8 +35,7 @@ const Home = () => {
       console.log('sent');
       await sendPushNotification(token);
     }, 4000);
-  }
-
+  };
 
   // Can use this function below, OR use Expo's Push Notification Tool-> https://expo.io/notifications
   async function sendPushNotification(expoPushToken) {
@@ -61,17 +59,20 @@ const Home = () => {
   }
 
   useEffect(() => {
-    registerForPushNotifications()
-    Notifications.addNotificationReceivedListener(() => {console.log('HELLO');})
-  }, [])
+    registerForPushNotifications();
+    Notifications.addNotificationReceivedListener(() => {
+      console.log('HELLO');
+    });
+  }, []);
 
   return (
     <View>
       <Text>This is home</Text>
-      <Link to='/settings'><Text>Start</Text></Link>
-      <Link to='/settings'><Text>Settings</Text></Link>
+      <Link to="/settings">
+        <Text>Settings</Text>
+      </Link>
     </View>
   );
-}
+};
 
 export default Home;
