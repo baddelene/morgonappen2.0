@@ -47,7 +47,6 @@ const FirstTime = () => {
       setMySelectedTime(`${getHours()}:${getMinutes()}`);
     }
     const currentDate = selectedTime || time;
-    const item = await AsyncStorage.getItem("isFirstTime");
     setTime(currentDate);
   };
 
@@ -91,14 +90,11 @@ const FirstTime = () => {
     try {
       const response = await db.collection("users").add(data);
       const id = response.id;
-      try {
-        await AsyncStorage.setItem("userId", id);
-        await AsyncStorage.setItem("isFirstTime", "false");
-        const item = await AsyncStorage.getItem("isFirstTime");
+      await AsyncStorage.multiSet([
+        ["timeToReceiveCard", JSON.stringify(unixedDate)], 
+        ["userId", id], 
+        ["isFirstTime", "false"]])
         setRedirectTo("card");
-      } catch (error) {
-        console.log(error);
-      }
     } catch (error) {
       console.log(error);
     }
