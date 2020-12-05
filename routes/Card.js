@@ -21,7 +21,7 @@ const Card = () => {
       .doc(userId)
       .get()
       .then((snapshot) => {
-        return snapshot.data().usedCards;
+        return snapshot.data() ? snapshot.data().usedCards : [];
       });
   };
 
@@ -57,7 +57,7 @@ const Card = () => {
     // await db.collection("users").doc(userId).set({
     //   usedCards: finishedCards
     // }, {merge: true})
-  }
+  };
 
   const getRandomInt = (max) => {
     return Math.floor(Math.random() * Math.floor(max));
@@ -67,32 +67,48 @@ const Card = () => {
     const userId = await AsyncStorage.getItem('userId');
     //Check if Date.now() is same or after time in DB and if so do below, else use image object in asyncStorage.
     const now = moment().seconds(0).milliseconds(0);
-    const timeForNewImageInStorage = JSON.parse(await AsyncStorage.getItem('timeToReceiveCard'));
-    const time = moment.unix(timeForNewImageInStorage).seconds(0).milliseconds(0).toISOString() 
+    const timeForNewImageInStorage = JSON.parse(
+      await AsyncStorage.getItem('timeToReceiveCard')
+    );
+    const time = moment
+      .unix(timeForNewImageInStorage)
+      .seconds(0)
+      .milliseconds(0)
+      .toISOString();
     const shouldUpdateImage = moment(now).isSameOrAfter(time);
 
     //Get card from AsyncStorage
-    const localImageObject = JSON.parse(await AsyncStorage.getItem('localImageObject'));
+    const localImageObject = JSON.parse(
+      await AsyncStorage.getItem('localImageObject')
+    );
     if (localImageObject === null) {
       console.log('Is null');
       const chosenCard = await getNewCardAndFilterOutUsedCards();
 
       //Add chosen card to Async.
-      await AsyncStorage.setItem("localImageObject", JSON.stringify(chosenCard));
+      await AsyncStorage.setItem(
+        'localImageObject',
+        JSON.stringify(chosenCard)
+      );
       setSelectedCard(chosenCard);
-    } else if(shouldUpdateImage) {
+    } else if (shouldUpdateImage) {
       console.log('Should update image');
-      const newTime = await db.collection("users").doc(userId).get().then(data => data.data().time);
+      const newTime = await db
+        .collection('users')
+        .doc(userId)
+        .get()
+        .then((data) => data.data().time);
       console.log(moment.unix(newTime).toISOString());
       await AsyncStorage.setItem('timeToReceiveCard', JSON.stringify(newTime));
-      const chosenCard = await getNewCardAndFilterOutUsedCards()
+      const chosenCard = await getNewCardAndFilterOutUsedCards();
       setSelectedCard(chosenCard);
     } else {
       console.log('Same image');
-      const chosenCard = JSON.parse(await AsyncStorage.getItem("localImageObject"));
-      setSelectedCard(chosenCard)
+      const chosenCard = JSON.parse(
+        await AsyncStorage.getItem('localImageObject')
+      );
+      setSelectedCard(chosenCard);
     }
-    
   };
 
   return (

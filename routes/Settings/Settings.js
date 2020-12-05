@@ -5,8 +5,10 @@ import {
   View,
   TouchableWithoutFeedback,
   TouchableOpacity,
+  Switch,
 } from 'react-native';
-import { Link, Redirect } from 'react-router-native';
+import { Redirect } from 'react-router-native';
+// import * as Permissions from 'expo-permissions';
 import { LinearGradient } from 'expo-linear-gradient';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import firebase from '../../config/firebase';
@@ -23,6 +25,10 @@ const Settings = () => {
   const [mySelectedTime, setMySelectedTime] = useState('');
   const [initialTime, setInitialTime] = useState('');
   const [timeFromPicker, setTimeFromPicker] = useState(new Date(Date.now()));
+  const [pushIsEnabled, setPushIsEnabled] = useState(true);
+
+  const toggleEnabledPush = () =>
+    setIsEnabled((previousState) => !previousState);
 
   const connected = async () => {
     const id = await AsyncStorage.getItem('userId');
@@ -75,8 +81,13 @@ const Settings = () => {
   };
 
   const saveSettings = async () => {
-    const unixedDate = moment(timeFromPicker).add(1, "day").unix();
+    const unixedDate = moment(timeFromPicker).add(1, 'day').unix();
     const user = db.collection('users').doc(userId);
+    // const { status: existingStatus } = await Permissions.getAsync(
+    //   Permissions.NOTIFICATIONS
+    // );
+    // let finalStatus = existingStatus;
+    // console.log(finalStatus, 'FINAL SATUS');
 
     try {
       await user.update({ time: unixedDate });
@@ -86,11 +97,19 @@ const Settings = () => {
     }
   };
 
+  const goBack = () => {
+    setRedirectTo(true);
+  };
+
   return (
     <View style={styles.container}>
       {redirectTo && <Redirect to="/card" />}
       <View>
         <Text style={styles.heading}>Inställningar</Text>
+        <PushNotifications
+          pushIsEnabled={pushIsEnabled}
+          toggleEnabledPush={toggleEnabledPush}
+        />
         <TimeSettings
           openTimePicker={openTimePicker}
           mySelectedTime={mySelectedTime}
@@ -106,9 +125,9 @@ const Settings = () => {
           colors={['#FF5C00', '#E4862F']}
           style={styles.buttonContainer}
         >
-          <Link to="/">
+          <TouchableOpacity onPress={goBack}>
             <Text style={styles.buttonText}>Tillbaka</Text>
-          </Link>
+          </TouchableOpacity>
         </LinearGradient>
 
         <LinearGradient
@@ -121,6 +140,24 @@ const Settings = () => {
         </LinearGradient>
       </View>
     </View>
+  );
+};
+
+const PushNotifications = (props) => {
+  const { pushIsEnabled, toggleEnabledPush } = props;
+  return (
+    <>
+      <View style={styles.settingBlock}>
+        <Text style={styles.settingAttribute}>Notiser</Text>
+        <Switch
+          trackColor={{ false: '#767577', true: '#E4862F' }}
+          thumbColor={pushIsEnabled ? '#FFF' : '#FFF'}
+          ios_backgroundColor="#3e3e3e"
+          onValueChange={toggleEnabledPush}
+          value={pushIsEnabled}
+        />
+      </View>
+    </>
   );
 };
 
@@ -165,6 +202,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 30,
   },
   settingAttribute: {
     fontSize: 24,
@@ -178,6 +216,7 @@ const styles = StyleSheet.create({
   buttonWrapper: {
     display: 'flex',
     flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   container: {
     backgroundColor: '#fff',
@@ -197,6 +236,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 14,
     paddingHorizontal: 20,
+    flex: 0.48,
   },
   buttonText: {
     color: '#fff',
