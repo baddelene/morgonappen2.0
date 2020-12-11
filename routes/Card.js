@@ -97,7 +97,7 @@ const Card = () => {
         .collection('users')
         .doc(userId)
         .get()
-        .then((data) => data.data().time);
+        .then((data) => (data.data() ? data.data().time : false));
       console.log(moment.unix(newTime).toISOString());
       await AsyncStorage.setItem('timeToReceiveCard', JSON.stringify(newTime));
       const chosenCard = await getNewCardAndFilterOutUsedCards();
