@@ -15,7 +15,6 @@ export default function App() {
   }, []);
 
   const isFirstTime = async () => {
-
     // await AsyncStorage.clear(); //DEV ONLY
     setRedirectTo(
       (await AsyncStorage.getItem('isFirstTime')) === 'false'

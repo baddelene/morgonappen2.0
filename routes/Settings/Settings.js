@@ -5,8 +5,10 @@ import {
   View,
   TouchableWithoutFeedback,
   TouchableOpacity,
+  Linking,
 } from 'react-native';
-import { Link, Redirect } from 'react-router-native';
+import { Redirect } from 'react-router-native';
+import * as Permissions from 'expo-permissions';
 import { LinearGradient } from 'expo-linear-gradient';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import firebase from '../../config/firebase';
@@ -30,7 +32,7 @@ const Settings = () => {
 
     const users = db.collection('users').doc(id);
     const user = await users.get();
-    const userTime = user.data().time;
+    const userTime = user.data() ? user.data().time : false;
     const realTime = moment.unix(userTime);
 
     // setTimeFromPicker(realTime);
@@ -75,7 +77,7 @@ const Settings = () => {
   };
 
   const saveSettings = async () => {
-    const unixedDate = moment(timeFromPicker).add(1, "day").unix();
+    const unixedDate = moment(timeFromPicker).add(1, 'day').unix();
     const user = db.collection('users').doc(userId);
 
     try {
@@ -86,11 +88,16 @@ const Settings = () => {
     }
   };
 
+  const goBack = () => {
+    setRedirectTo(true);
+  };
+
   return (
     <View style={styles.container}>
       {redirectTo && <Redirect to="/card" />}
       <View>
         <Text style={styles.heading}>Inställningar</Text>
+        <PushNotifications />
         <TimeSettings
           openTimePicker={openTimePicker}
           mySelectedTime={mySelectedTime}
@@ -106,9 +113,9 @@ const Settings = () => {
           colors={['#FF5C00', '#E4862F']}
           style={styles.buttonContainer}
         >
-          <Link to="/">
+          <TouchableOpacity onPress={goBack}>
             <Text style={styles.buttonText}>Tillbaka</Text>
-          </Link>
+          </TouchableOpacity>
         </LinearGradient>
 
         <LinearGradient
@@ -122,6 +129,21 @@ const Settings = () => {
       </View>
     </View>
   );
+};
+
+const PushNotifications = () => {
+  return (
+    <TouchableWithoutFeedback onPress={OpenMobileSettings}>
+      <View style={styles.settingBlock}>
+        <Text style={styles.settingAttribute}>Notiser</Text>
+        <Text style={styles.settingValue}>Ändra</Text>
+      </View>
+    </TouchableWithoutFeedback>
+  );
+};
+
+const OpenMobileSettings = () => {
+  Linking.openURL('app-settings:');
 };
 
 const TimeSettings = (props) => {
@@ -165,12 +187,14 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 30,
   },
   settingAttribute: {
     fontSize: 24,
   },
   settingValue: {
     fontSize: 24,
+    color: '#FF5C00',
   },
   timePicker: {
     position: 'relative',
@@ -178,6 +202,7 @@ const styles = StyleSheet.create({
   buttonWrapper: {
     display: 'flex',
     flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   container: {
     backgroundColor: '#fff',
@@ -197,6 +222,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 14,
     paddingHorizontal: 20,
+    flex: 0.48,
   },
   buttonText: {
     color: '#fff',
